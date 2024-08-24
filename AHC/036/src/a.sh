@@ -1,1 +1,1 @@
-python main.py < ../inputs/a.txt
+python main.py < ../inputs/b.txt
