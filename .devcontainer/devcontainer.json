@@ -1,0 +1,34 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
+{
+	"name": "DERMS_Planner_phase1",
+	// Configure tool-specific properties.
+	"image": "mcr.microsoft.com/devcontainers/python:3.12-bullseye",
+    "features": {
+        "ghcr.io/devcontainers-contrib/features/poetry:2": {},
+    },	
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"amazonwebservices.aws-toolkit-vscode",
+				"nickdemayo.vscode-json-editor",
+				"usernamehw.errorlens",
+				"streetsidesoftware.code-spell-checker",
+				"mhutchie.git-graph",
+				"SonarSource.sonarlint-vscode",
+				"ms-python.python",
+				"ms-python.debugpy",
+				"LittleFoxTeam.vscode-python-test-adapter",
+				"GitHub.copilot",
+				"charliermarsh.ruff",
+				"gruntfuggly.todo-tree",
+				"ms-toolsai.jupyter",
+				"formulahendry.code-runner",
+				"shd101wyy.markdown-preview-enhanced",
+				"mechatroner.rainbow-csv",
+				"janisdd.vscode-edit-csv"
+			]
+		}
+	},
+	"postAttachCommand": ".devcontainer/post-attach.sh"
+}
