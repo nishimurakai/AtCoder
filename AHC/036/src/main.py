@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from collections import deque, defaultdict
+import copy
 
 N, M, L_T, L_A, L_B = map(int, input().split())
 
@@ -114,13 +115,21 @@ def split_list_into_chunks(list1, chunk_size=4):
     # list1をchunk_sizeのサイズで分割
     return [list1[i:i + chunk_size] for i in range(0, len(list1), chunk_size)]
 
+# list1, list2が与えられる．list1に含まれるlist2の要素ではないもののインデックスのリストを取得
+def get_non_matching_indices(list1, list2):
+    non_matching_indices = []
+    for index, element in enumerate(list1):
+        if element not in list2:
+            non_matching_indices.append(index)
+    return non_matching_indices
 
 # 初期設定
 now = 0
 A = []
-while len(A) <= L_A:
+while len(A) < L_A:
     A.append(now)
     now = (now + 1) % N
+print(*A, sep=" ")
 B = [-1 for _ in range(L_B)]
 
 now = 0
@@ -128,14 +137,39 @@ for i in range(L_T):
     
     # パスを見つける
     path = bfs_path(graph, now, T[i])
+    # 現在地をパスから削除
+    path.pop(0)
 
+    # パスにそって移動
+    # Bの長さごとにパスを分割
     chunks = split_list_into_chunks(path, L_B)
-    print(chunks)
+    chunks_not_sorted = copy.deepcopy(chunks)
+    # chunkの内容をBに入れる処理
+    # 要件
+    # 0. 1つずつBに入れていく TODO まとめて入れたい
+    # 1. すでに入っているものは入れない
+    # 2. s 4 0 0の形式で出力する
+    # 3. 移動経路を m 0, m 1, m 3, m 4の形式で出力する
     for j in range(len(chunks)):
-        B[j] = chunks[j][0]
+        chunks[j].sort()
+        # print(f"chunk: {chunks[j]}")
+    for j in range(len(chunks)):
+        non_matching_indices = get_non_matching_indices(B, chunks[j])
+        # print(non_matching_indices)
+        miss_list = missing_elements(chunks[j], B)
+        # print(miss_list)
+        for k in range(len(miss_list)):
+            insert_p = non_matching_indices.pop(0)
+            B[insert_p] = miss_list[k]
+            print(f"s 1 {miss_list[k]} {insert_p}")
+        for k in range(len(chunks_not_sorted[j])):
+            print(f"m {chunks_not_sorted[j][k]}")
+        # print(f"B: {B}")
+        # for k in range(len(chunks[j])):
+        #     B[j] = chunks[j][k]
+        #     print(f"s {j} {k} {B[j]}")
     # for j in range(len(path) - 1):
     #     print(f"{path[j]} -> ", end="")
     # print(f"{T[i]}\n")
 
     now = T[i]
-
