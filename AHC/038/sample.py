@@ -23,7 +23,7 @@ print(rx, ry)
 dir1 = 0 # direction of edge (0, 1)
 holding = False # whether holding a takoyaki
 
-for turn in range(100):
+for turn in range(10000):
     S = []
     # random move
     dir = random.randint(0, 3)
@@ -63,3 +63,5 @@ for turn in range(100):
         S.append('.')
     # output the command
     print(''.join(S))
+    if s == t:
+        break
