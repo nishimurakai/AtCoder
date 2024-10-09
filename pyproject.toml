@@ -15,3 +15,30 @@ ipykernel = "^6.29.5"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 88
+exclude = [
+    ".ruff_cache"
+]
+indent-width = 4
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+"D100", # Missing docstring in public module
+"D101", # Missing docstring in public class
+"D102", # Missing docstring in public method
+"D103", # Missing docstring in public function
+"D107",  # Missing docstring in __init__
+"COM812", # Trailing comma missing
+"S101", # Use of assert detected *ToDo: 製品化の時にはignoreを削除する
+"T201", # プリントの警告 *ToDo: 製品化の時にはignoreを削除する
+"ALL",
+]
+
+fixable = [
+"E501", # Line too long 
+"I001", # importブロックがソートされていない
+]
