@@ -11,34 +11,34 @@ execution_times = defaultdict(list)
 
 
 # 実行時間を測定するデコレータ
-def measure_time(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start_time = time.perf_counter()
-        result = func(*args, **kwargs)
-        end_time = time.perf_counter()
-        execution_time = end_time - start_time
-        execution_times[func.__name__].append(execution_time)
-        return result
+# def measure_time(func):
+#     @wraps(func)
+#     def wrapper(*args, **kwargs):
+#         start_time = time.perf_counter()
+#         result = func(*args, **kwargs)
+#         end_time = time.perf_counter()
+#         execution_time = end_time - start_time
+#         execution_times[func.__name__].append(execution_time)
+#         return result
 
-    return wrapper
+#     return wrapper
 
 
 # 実行時間の集計と表示
-def print_execution_times():
-    for func_name, times in execution_times.items():
-        total_time = sum(times)
-        average_time = total_time / len(times)
-        print(f"Function {func_name} executed {len(times)} times")
-        print(f"Total execution time: {total_time:.10f} seconds")
-        print(f"Average execution time: {average_time:.10f} seconds")
-        print()
+# def print_execution_times():
+#     for func_name, times in execution_times.items():
+#         total_time = sum(times)
+#         average_time = total_time / len(times)
+#         print(f"Function {func_name} executed {len(times)} times")
+#         print(f"Total execution time: {total_time:.10f} seconds")
+#         print(f"Average execution time: {average_time:.10f} seconds")
+#         print()
 
 
 start_time = time.perf_counter()
 
 t_start = 0.1
-t_final = 2.9
+t_final = 2.8
 
 time_passed = time.perf_counter() - start_time
 temp = t_start * math.pow((t_final / t_start), time_passed)
@@ -83,7 +83,7 @@ history_s = [bitarray("0" * N * N) for _ in range(MAX_ITER)]
 len_history_s = 0
 
 
-@measure_time
+# @measure_time
 def rotate(center_x: int, center_y: int, now_x: int, now_y: int, rot: int) -> tuple:
     # 時計回りに90度回転
     if rot == 1:
@@ -95,7 +95,7 @@ def rotate(center_x: int, center_y: int, now_x: int, now_y: int, rot: int) -> tu
         return now_x, now_y
 
 
-@measure_time
+# @measure_time
 def search_target_is_reachable(center_x: int, center_y: int, x: int, y: int) -> int:
     d = -1
     for i in range(3):
@@ -105,7 +105,7 @@ def search_target_is_reachable(center_x: int, center_y: int, x: int, y: int) -> 
     return d
 
 
-@measure_time
+# @measure_time
 def search_source_is_reachable(
     center_x: int, center_y: int, x: int, y: int, bit_s: list
 ) -> int:
@@ -117,7 +117,7 @@ def search_source_is_reachable(
     return d
 
 
-@measure_time
+# @measure_time
 def init_random_tree():
     tree = [
         [random.randint(0, i), random.randint(1, min(N, V))]
@@ -126,30 +126,30 @@ def init_random_tree():
     return tree
 
 
-@measure_time
+# @measure_time
 def init_tree():
     tree = [[0, i] for i in range(1, min(N, V))]
     return tree
 
 
-@measure_time
+# @measure_time
 def init_random_rx_ry():
     rx = random.randint(0, N - 1)
     ry = random.randint(0, N - 1)
     return rx, ry
 
 
-@measure_time
+# @measure_time
 def num_diff_list(bit_now: bitarray) -> int:
     return (~bit_now & bit_t).count()
 
 
-@measure_time
+# @measure_time
 def eval_func(a: bitarray, num) -> int:
     return 1000 * num_diff_list(a) + num
 
 
-@measure_time
+# @measure_time
 def calc_score_paths(
     bit_now: bitarray,
     paths: list,
@@ -233,7 +233,7 @@ def calc_score_paths(
     return eval_func(bit_now, turn)
 
 
-@measure_time
+# @measure_time
 def update_history_rx_history_ry(index: int, paths: list) -> None:
     global history_rx, history_ry, history_xs, history_ys
     for i in range(index, len_history_s):
@@ -275,7 +275,7 @@ def update_history_rx_history_ry(index: int, paths: list) -> None:
                     history_ys[i][j] = history_ys[i - 1][j]
 
 
-@measure_time
+# @measure_time
 def update_history_xs_history_ys_all(index: int, paths: list) -> None:
     global history_xs, history_ys
     for i in range(index, len_history_s):
@@ -303,7 +303,7 @@ def update_history_xs_history_ys_target_node(index: int, paths: list, num: int) 
             history_ys[i][num] = history_ys[i - 1][num] - 1
 
 
-@measure_time
+# @measure_time
 def update_history_s_and_holdings(index: int) -> None:
     global history_xs, history_ys, history_s, history_holdings, len_history_s, bit_t
     bit_now = history_s[index].copy()
@@ -332,7 +332,7 @@ def update_history_s_and_holdings(index: int) -> None:
             break
 
 
-@measure_time
+# @measure_time
 def change_action(old_act: str) -> str:
     if old_act == "R":
         return random.choice([".", "L"])
@@ -342,19 +342,108 @@ def change_action(old_act: str) -> str:
         return random.choice(["R", "L"])
 
 
-def change_root_action(old_act: str) -> int:
+def change_root_action(old_act: str, x:int,y:int) -> int:
     if old_act == "R":
-        return random.choice([".", "L", "D", "U"])
+        if (x == 0) and (y == 0):
+            return random.choice([".", "D"])
+        elif (x == 0) and (y == N-1):
+            return random.choice([".", "D", "L"])
+        elif (x == N-1) and (y == 0):
+            return random.choice([".", "U"])
+        elif (x == N-1) and (y == N-1):
+            return random.choice([".", "U", "L"])
+        elif (x == 0):
+            return random.choice([".", "D", "L"])
+        elif (x == N-1):
+            return random.choice([".", "U", "L"])
+        elif (y == 0):
+            return random.choice([".", "D", "U"])
+        elif (y == N-1):
+            return random.choice([".", "D", "U", "L"])
+        else:
+            return random.choice([".", "L", "D", "U"])
     elif old_act == "L":
-        return random.choice([".", "R", "D", "U"])
+        if (x == 0) and (y == 0):
+            return random.choice([".", "D", "R"])
+        elif (x == 0) and (y == N-1):
+            return random.choice([".", "D"])
+        elif (x == N-1) and (y == 0):
+            return random.choice([".", "U", "R"])
+        elif (x == N-1) and (y == N-1):
+            return random.choice([".", "U"])
+        elif (x == 0):
+            return random.choice([".", "D", "R"])
+        elif (x == N-1):
+            return random.choice([".", "U", "R"])
+        elif (y == 0):
+            return random.choice([".", "D", "U", "R"])
+        elif (y == N-1):
+            return random.choice([".", "D", "U"])
+        else:
+            return random.choice([".", "R", "D", "U"])
     elif old_act == "D":
-        return random.choice([".", "R", "L", "U"])
+        if (x == 0) and (y == 0):
+            return random.choice([".", "R"])
+        elif (x == 0) and (y == N-1):
+            return random.choice([".", "L"])
+        elif (x == N-1) and (y == 0):
+            return random.choice([".", "U", "R"])
+        elif (x == N-1) and (y == N-1):
+            return random.choice([".", "U", "L"])
+        elif (x == 0):
+            return random.choice([".", "R", "L"])
+        elif (x == N-1):
+            return random.choice([".", "U", "R", "L"])
+        elif (y == 0):
+            return random.choice([".", "R", "U"])
+        elif (y == N-1):
+            return random.choice([".", "L", "U"])
+        else:
+            return random.choice([".", "R", "L", "U"])
+    # U
+    elif old_act == "U":
+        if (x == 0) and (y == 0):
+            return random.choice([".", "D", "R"])
+        elif (x == 0) and (y == N-1):
+            return random.choice([".", "D", "L"])
+        elif (x == N-1) and (y == 0):
+            return random.choice([".", "R"])
+        elif (x == N-1) and (y == N-1):
+            return random.choice([".", "L"])
+        elif (x == 0):
+            return random.choice([".", "D", "R", "L"])
+        elif (x == N-1):
+            return random.choice([".", "R", "L"])
+        elif (y == 0):
+            return random.choice([".", "D", "R"])
+        elif (y == N-1):
+            return random.choice([".", "D", "L"])
+        else:
+            return random.choice([".", "R", "L", "D"])
     else:
-        return random.choice([".", "R", "L", "D"])
+        if (x == 0) and (y == 0):
+            return random.choice(["D", "R"])
+        elif (x == 0) and (y == N-1):
+            return random.choice(["D", "L"])   
+        elif (x == N-1) and (y == 0):
+            return random.choice(["U", "R"])
+        elif (x == N-1) and (y == N-1):
+            return random.choice(["U", "L"])
+        elif (x == 0):
+            return random.choice(["D", "R", "L"])
+        elif (x == N-1):
+            return random.choice(["U", "R", "L"])
+        elif (y == 0):
+            return random.choice(["D", "R", "U"])
+        elif (y == N-1):
+            return random.choice(["D", "L", "U"])
+        else:
+            return random.choice(["R", "L", "D", "U"])
 
 
-@measure_time
+# @measure_time
 def change_paths(paths: list) -> list:
+    global history_rx, history_ry, history_xs, history_ys, history_holdings, history_s, len_history_s
     # operation = random.choice(["insert", "delete", "modify"])
 
     # if operation == "insert":
@@ -375,10 +464,18 @@ def change_paths(paths: list) -> list:
     # if len(paths) <= 1:
     # return paths
     index = random.randint(1, len(paths) - 1)
-    act_index = random.randint(0, V - 1)
+    act_index = random.randint(1, len_tree-1)
     old_act = paths[index][act_index]
+
+    # print(f"history_rx:{history_rx[index-1]} history_ry:{history_ry[index-1]}")
+    # print(f"history_rx:{history_rx[index]} history_ry:{history_ry[index]}")
+    # print(f"paths[index][act_index]:{paths[index][0]}")
+    # print(f"history_xs:{history_xs[index-1]} history_ys:{history_ys[index-1]}")
+    # print(f"history_xs:{history_xs[index]} history_ys:{history_ys[index]}")
+    # print(f"index:{index} act_index:{act_index} old_act:{old_act}")
+    
     if act_index == 0:
-        new_action = change_root_action(old_act)
+        new_action = change_root_action(old_act, history_rx[index-1], history_ry[index-1])
         paths[index][act_index] = new_action
         update_history_rx_history_ry(index, paths)
     else:
@@ -391,7 +488,7 @@ def change_paths(paths: list) -> list:
     return paths
 
 
-@measure_time
+# @measure_time
 def paths_yakinamasi(paths: list) -> list:
     best_score = eval_func(history_s[len_history_s - 1], len_history_s)
     score = best_score
@@ -415,7 +512,7 @@ def paths_yakinamasi(paths: list) -> list:
     return best_paths
 
 
-@measure_time
+# @measure_time
 def create_init_paths(rx: int, ry: int, bit_now: bitarray) -> list:
     global \
         history_rx, \
@@ -525,7 +622,7 @@ def create_init_paths(rx: int, ry: int, bit_now: bitarray) -> list:
     return paths
 
 
-@measure_time
+# @measure_time
 def make_output(bit_now: bitarray, paths: list) -> str:
     rx = 0
     ry = 0
@@ -640,5 +737,3 @@ paths = paths_yakinamasi(paths=init_paths)
 # print(eval_func(history_s[len_history_s - 1], len_history_s))
 
 make_output(bit_now=bit_s.copy(), paths=init_paths.copy())
-
-# print_execution_times()
