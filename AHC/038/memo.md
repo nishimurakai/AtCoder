@@ -25,3 +25,89 @@
 - 経路変更に対して，高速に最後のsとpicksを求める
 or
 - 各葉ノードの座標のヒストリー，picksのヒストリーを保存する
+
+
+
+# @measure_time
+# def eval_initial_tree(tree: list, best_score: int = 100000) -> int:
+#     _s = [bit_now[i][:] for i in range(N)]
+#     _t = [bit_t[i][:] for i in range(N)]
+
+#     # decide the initial position
+#     rx, ry = 0, 0
+
+#     xs = [0 for _ in range(len(tree))]  # 全ての葉のx座標
+#     ys = [tree[i][1] for i in range(len(tree))]  # 全ての葉のy座標
+#     holdings = [False for _ in range(len(tree))]  # たこ焼きを持っているかどうか
+
+#     for turn in range(MAX_ITER):
+#         # 乱択
+#         d = random.randint(0, 4)
+#         dx, dy = DX[d], DY[d]
+#         if 0 <= rx + dx < N and 0 <= ry + dy < N:
+#             rx += dx
+#             ry += dy
+#             # 全ての頂点を移動
+#             for i in range(len(tree)):
+#                 xs[i] += dx
+#                 ys[i] += dy
+#         # 全ての頂点において行動を決定
+#         # 乱択
+#         for i in range(len(tree)):
+#             x = xs[i]
+#             y = ys[i]
+#             rot = -1
+#             if holdings[i]:
+#                 rot = search_target_is_reachable(rx, ry, x, y, _t)
+#             if rot == -1 or not holdings[i]:
+#                 rot = random.randint(0, 2)
+#             # 回転の中心（今回は全てrootノードより，rx, ry）
+#             rotate_center_x, rotate_center_y = rx, ry
+#             # grab or release takoyaki
+#             x, y = rotate(rotate_center_x, rotate_center_y, x, y, rot)
+#             xs[i] = x
+#             ys[i] = y
+
+#         # 乱択
+#         for i in range(len(tree)):
+#             x = xs[i]
+#             y = ys[i]
+#             change = False
+#             if 0 <= x and x < N and 0 <= y and y < N:
+#                 if _s[x][y] == 1 and _t[x][y] == 0 and not holdings[i]:
+#                     change = True
+#                     _s[x][y] = 0
+#                     holdings[i] = True
+#                 elif _s[x][y] == 0 and _t[x][y] == 1 and holdings[i]:
+#                     change = True
+#                     _s[x][y] = 1
+#                     holdings[i] = False
+#         if _s == _t:
+#             break
+#         if turn > best_score:
+#             break
+#     return turn
+
+
+# @measure_time
+# def search_best_tree():
+#     best_tree = []
+#     best_score = 100000
+#     for _ in range(MAX_RAND_ITER):
+#         tree = init_random_tree()
+#         score = eval_initial_tree(tree, best_score)
+#         if score < best_score:
+#             best_tree = tree
+#             best_score = score
+#     return best_tree
+
+[RDLU]
+ルートからの長さの順に
+0が右, 1が下, 2が左, 3が上
+xs[i] -> rx + DX[ds[i]]*(i+1)
+ys[i] -> ry + DY[ds[i]]*(i+1)
+ds = [0--3, 0--3, ...]
+i番目の要素は，rx + DIR[xs[i]*(i+1)]
+yも同様
+
+DIR = ["R", "D", "L", "U", "."]

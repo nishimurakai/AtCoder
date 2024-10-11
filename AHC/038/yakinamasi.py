@@ -43,7 +43,7 @@ t_final = 2.8
 time_passed = time.perf_counter() - start_time
 temp = t_start * math.pow((t_final / t_start), time_passed)
 
-MAX_ITER = 10000
+MAX_ITER = 100000
 # MAX_RAND_ITER = 100
 
 random.seed(42)
@@ -56,7 +56,7 @@ N, M, V = map(int, input().split())
 s = [list(map(int, list(input()))) for _ in range(N)]
 t = [list(map(int, list(input()))) for _ in range(N)]
 
-len_tree = min(N, V)
+len_tree = min(N, V) - 1
 
 s_str = "".join(["".join(map(str, s[i])) for i in range(N)])
 t_str = "".join(["".join(map(str, t[i])) for i in range(N)])
@@ -82,7 +82,6 @@ history_holdings = []
 history_s = [bitarray("0" * N * N) for _ in range(MAX_ITER)]
 len_history_s = 0
 
-
 # @measure_time
 def rotate(center_x: int, center_y: int, now_x: int, now_y: int, rot: int) -> tuple:
     # 時計回りに90度回転
@@ -96,11 +95,11 @@ def rotate(center_x: int, center_y: int, now_x: int, now_y: int, rot: int) -> tu
 
 
 # @measure_time
-def search_target_is_reachable(center_x: int, center_y: int, x: int, y: int) -> int:
+def search_target_is_reachable(center_x: int, center_y: int, x: int, y: int, bit_now:bitarray) -> int:
     d = -1
     for i in range(3):
         x, y = rotate(center_x, center_y, x, y, i)
-        if (x >= 0) and (x < N) and (y >= 0) and (y < N) and (bit_t[x * N + y] == 1):
+        if (x >= 0) and (x < N) and (y >= 0) and (y < N) and (bit_now[x * N + y] == 0) and (bit_t[x * N + y] == 1):
             d = i
     return d
 
@@ -168,7 +167,6 @@ def calc_score_paths(
 
     for path in paths:
         turn += 1
-
         if path[0] == ".":
             dx = 0
             dy = 0
@@ -240,94 +238,91 @@ def update_history_rx_history_ry(index: int, paths: list) -> None:
         if paths[i][0] == "R":
             if history_rx[i - 1] + 1 < N:
                 history_rx[i] = history_rx[i - 1] + 1
-                for j in range(len_tree - 1):
+                for j in range(len_tree):
                     history_xs[i][j] = history_xs[i - 1][j] + 1
             else:
                 paths[i][0] = "."
-                for j in range(len_tree - 1):
+                for j in range(len_tree):
                     history_xs[i][j] = history_xs[i - 1][j]
         elif paths[i][0] == "L":
             if history_rx[i - 1] - 1 >= 0:
                 history_rx[i] = history_rx[i - 1] - 1
-                for j in range(len_tree - 1):
+                for j in range(len_tree):
                     history_xs[i][j] = history_xs[i - 1][j] - 1
             else:
                 paths[i][0] = "."
-                for j in range(len_tree - 1):
+                for j in range(len_tree):
                     history_xs[i][j] = history_xs[i - 1][j]
         elif paths[i][0] == "D":
             if history_ry[i - 1] + 1 < N:
                 history_ry[i] = history_ry[i - 1] + 1
-                for j in range(len_tree - 1):
+                for j in range(len_tree):
                     history_ys[i][j] = history_ys[i - 1][j] + 1
             else:
                 paths[i][0] = "."
-                for j in range(len_tree - 1):
+                for j in range(len_tree):
                     history_ys[i][j] = history_ys[i - 1][j]
         elif paths[i][0] == "U":
             if history_ry[i - 1] - 1 >= 0:
                 history_ry[i] = history_ry[i - 1] - 1
-                for j in range(len_tree - 1):
+                for j in range(len_tree):
                     history_ys[i][j] = history_ys[i - 1][j] - 1
             else:
                 paths[i][0] = "."
-                for j in range(len_tree - 1):
+                for j in range(len_tree):
                     history_ys[i][j] = history_ys[i - 1][j]
 
 
 # @measure_time
-def update_history_xs_history_ys_all(index: int, paths: list) -> None:
-    global history_xs, history_ys
-    for i in range(index, len_history_s):
-        for j in range(1, V):
-            if paths[i][j] == "R":
-                history_xs[i][j] += 1
-            elif paths[i][j] == "L":
-                history_xs[i][j] -= 1
-            elif paths[i][j] == "D":
-                history_ys[i][j] += 1
-            elif paths[i][j] == "U":
-                history_ys[i][j] -= 1
+# def update_history_xs_history_ys_all(index: int, paths: list) -> None:
+#     global history_xs, history_ys
+#     for i in range(index, len_history_s):
+#         for j in range(1, V):
+#             if paths[i][j] == "R":
+#                 history_xs[i][j] += 1
+#             elif paths[i][j] == "L":
+#                 history_xs[i][j] -= 1
+#             elif paths[i][j] == "D":
+#                 history_ys[i][j] += 1
+#             elif paths[i][j] == "U":
+#                 history_ys[i][j] -= 1
 
 
 def update_history_xs_history_ys_target_node(index: int, paths: list, num: int) -> None:
-    global history_xs, history_ys
+    global history_xs, history_ys, history_rx, history_ry
     for i in range(index, len_history_s):
         if paths[i][num] == "R":
-            history_xs[i][num] = history_xs[i - 1][num] + 1
+            history_xs[i][num], history_ys[i][num] = rotate(history_rx[i-1], history_ry[i-1], history_xs[i-1][num], history_ys[i-1][num], 1)
         elif paths[i][num] == "L":
-            history_xs[i][num] = history_xs[i - 1][num] - 1
-        elif paths[i][num] == "D":
-            history_ys[i][num] = history_ys[i - 1][num] + 1
-        elif paths[i][num] == "U":
-            history_ys[i][num] = history_ys[i - 1][num] - 1
+            history_xs[i][num], history_ys[i][num] = rotate(history_rx[i-1], history_ry[i-1], history_xs[i-1][num], history_ys[i-1][num], 2)
+        else:
+            history_xs[i][num] = history_xs[i - 1][num]
 
 
 # @measure_time
-def update_history_s_and_holdings(index: int) -> None:
+def update_history_s_and_holdings(index: int, num:int) -> None:
     global history_xs, history_ys, history_s, history_holdings, len_history_s, bit_t
     bit_now = history_s[index].copy()
     for i in range(index, len_history_s):
-        for j in range(len_tree - 1):
-            x = history_xs[i][j]
-            y = history_ys[i][j]
-            if 0 <= x and x < N and 0 <= y and y < N:
-                if (
-                    (bit_now[x * N + y] == 1)
-                    and (bit_t[x * N + y] == 0)
-                    and (not history_holdings[i])
-                ):
-                    bit_now[i][x * N + y] = 0
-                    history_holdings[i][j] = True
-                elif (
-                    (bit_now[x * N + y] == 0)
-                    and (bit_t[x * N + y] == 1)
-                    and (history_holdings[i][j])
-                ):
-                    history_s[i][x * N + y] = 1
-                    history_holdings[i][j] = False
+        x = history_xs[i][num]
+        y = history_ys[i][num]
+        if 0 <= x and x < N and 0 <= y and y < N:
+            if (
+                (bit_now[x * N + y] == 1)
+                and (bit_t[x * N + y] == 0)
+                and (not history_holdings[i])
+            ):
+                bit_now[i][x * N + y] = 0
+                history_holdings[i][num] = True
+            elif (
+                (bit_now[x * N + y] == 0)
+                and (bit_t[x * N + y] == 1)
+                and (history_holdings[i][num])
+            ):
+                history_s[i][x * N + y] = 1
+                history_holdings[i][num] = False
         history_s[i] = bit_now & all_ones
-        if bit_now == bit_t:
+        if (bit_now == bit_t):
             len_history_s = i
             break
 
@@ -463,16 +458,9 @@ def change_paths(paths: list) -> list:
     # else:
     # if len(paths) <= 1:
     # return paths
-    index = random.randint(1, len(paths) - 1)
-    act_index = random.randint(1, len_tree-1)
+    index = random.randint(1, len_history_s)
+    act_index = random.randint(1, len_tree - 1)
     old_act = paths[index][act_index]
-
-    # print(f"history_rx:{history_rx[index-1]} history_ry:{history_ry[index-1]}")
-    # print(f"history_rx:{history_rx[index]} history_ry:{history_ry[index]}")
-    # print(f"paths[index][act_index]:{paths[index][0]}")
-    # print(f"history_xs:{history_xs[index-1]} history_ys:{history_ys[index-1]}")
-    # print(f"history_xs:{history_xs[index]} history_ys:{history_ys[index]}")
-    # print(f"index:{index} act_index:{act_index} old_act:{old_act}")
     
     if act_index == 0:
         new_action = change_root_action(old_act, history_rx[index-1], history_ry[index-1])
@@ -481,9 +469,9 @@ def change_paths(paths: list) -> list:
     else:
         new_action = change_action(old_act)
         paths[index][act_index] = new_action
-        update_history_xs_history_ys_target_node(index, paths, act_index - 1)
+        update_history_xs_history_ys_target_node(index, paths, act_index)
 
-    update_history_s_and_holdings(index)
+    update_history_s_and_holdings(index, act_index)
 
     return paths
 
@@ -509,8 +497,297 @@ def paths_yakinamasi(paths: list) -> list:
             paths = new_paths.copy()
             score = new_score
 
+
     return best_paths
 
+def calc_dx(x:int, d:int, bit_now:bitarray) -> int:
+    if (x == 0) and (d == -1):
+        return 0
+    elif d == -1:
+        ret = bit_now[x * N:(x + 1) * N].count()
+    elif (x == N-1) and (d == 1):
+        return 0
+    else:
+        return random.choice([1, -1])
+    
+def calc_dy(y:int, d:int, bit_now:bitarray) -> int:
+    if (y == 0) and (d == -1):
+        return 0
+    elif y == N-1:
+        return -1
+    else:
+        return random.choice([1, -1])
+
+# DX = [0, 1, 0, -1, 0]
+# DY = [1, 0, -1, 0, 0]
+# DIR = ["R", "D", "L", "U", "."]
+def choice_root_dir(rx, ry, bit_now, r_goal_num:int, d_goal_num:int, l_goal_num:int, u_goal_num:int, r_num:int, d_num:int, l_num:int, u_num:int, catch_num:int, not_goal_num:int) -> int:
+    choices = [0, 1, 2, 3]
+    return random.choice(choices)
+    # print(f"r_goal_num:{r_goal_num}")
+    # print(f"d_goal_num:{d_goal_num}")
+    # print(f"l_goal_num:{l_goal_num}")
+    # print(f"u_goal_num:{u_goal_num}")
+    # print(f"r_num:{r_num}")
+    # print(f"d_num:{d_num}")
+    # print(f"l_num:{l_num}")
+    # print(f"u_num:{u_num}")
+    # print(f"catch_num:{catch_num}")
+    # print(f"not_goal_num:{not_goal_num}")
+    # if (catch_num == 0):
+    # 没
+    # if catch_num == not_goal_num:
+    #     # goto goal
+    #     if (catch_num == 1) and (not_goal_num == 1):
+    #         return random.choice(choices)
+    #     elif (r_goal_num != 0) or (d_goal_num != 0) or (l_goal_num != 0) or (u_goal_num != 0):
+    #         # return random.choices(choices, weights=[r_goal_num, d_goal_num, l_goal_num, u_goal_num], k=1)[0]
+    #         max_val = max(r_goal_num, d_goal_num, l_goal_num, u_goal_num)
+    #         if max_val == r_goal_num:
+    #             return 0
+    #         elif max_val == d_goal_num:
+    #             return 1
+    #         elif max_val == l_goal_num:
+    #             return 2
+    #         else:
+    #             return 3
+    #     else:
+    #         return random.choice(choices)
+    # elif (catch_num < (len_tree//2)):
+    #     # goto catch
+    #     if (r_num != 0) or (d_num != 0) or (l_num != 0) or (u_num != 0):
+    #         # return random.choices(choices, weights=[r_num, d_num, l_num, u_num], k=1)[0]
+    #         max_val = max(r_num, d_num, l_num, u_num)
+    #         if max_val == r_num:
+    #             return 0
+    #         elif max_val == d_num:
+    #             return 1
+    #         elif max_val == l_num:
+    #             return 2
+    #         else:
+    #             return 3
+    #     else:
+    #         return random.choice(choices)
+    # elif (catch_num > (len_tree//2)):
+    #     # goto goal
+    #     if (r_goal_num != 0) or (d_goal_num != 0) or (l_goal_num != 0) or (u_goal_num != 0):
+    #         # return random.choices(choices, weights=[r_goal_num, d_goal_num, l_goal_num, u_goal_num], k=1)[0]
+    #         max_val = max(r_goal_num, d_goal_num, l_goal_num, u_goal_num)
+    #         if max_val == r_goal_num:
+    #             return 0
+    #         elif max_val == d_goal_num:
+    #             return 1
+    #         elif max_val == l_goal_num:
+    #             return 2
+    #         else:
+    #             return 3
+    #     else:
+    #         return random.choice(choices)
+    # else:
+    #     # goto catch or goal
+    #     if (r_goal_num + r_num != 0) or (d_goal_num + d_num != 0) or (l_goal_num + l_num != 0) or (u_goal_num + u_num != 0):
+    #         return random.choices(choices, weights=[r_goal_num + r_num, d_goal_num + d_num, l_goal_num + l_num, u_goal_num + u_num], k=1)[0]
+    #     else:
+    #         return random.choice(choices)
+
+
+def count_ones_left_goal(x:int) -> int:
+    count = 0
+    for row in range(N):
+        for col in range(x):
+            if (bit_t[row * N + col] == 1) and (bit_s[row * N + col] == 0):
+                count += 1
+    return count
+
+def count_ones_right_goal(x: int) -> int:
+    count = 0
+    for row in range(N):
+        for col in range(x + 1, N):
+            if (bit_t[row * N + col] == 1) and (bit_s[row * N + col] == 0):
+                count += 1
+    return count
+
+def count_ones_up_goal(y:int) -> int:
+    count = 0
+    for row in range(y):
+        for col in range(N):
+            if (bit_t[row * N + col] == 1) and (bit_s[row * N + col] == 0):
+                count += 1
+    return count
+
+def count_ones_down_goal(y:int) -> int:
+    count = 0
+    for row in range(y + 1, N):
+        for col in range(N):
+            if (bit_t[row * N + col] == 1) and (bit_s[row * N + col] == 0):
+                count += 1
+    return count
+
+def count_ones_left_num(x:int) -> int:
+    count = 0
+    for row in range(N):
+        for col in range(x):
+            if (bit_t[row * N + col] == 0) and (bit_s[row * N + col] == 1):
+                count += 1
+    return count
+
+def count_ones_right_num(x: int) -> int:
+    count = 0
+    for row in range(N):
+        for col in range(x + 1, N):
+            if (bit_t[row * N + col] == 0) and (bit_s[row * N + col] == 1):
+                count += 1
+    return count
+
+def count_ones_up_num(y:int) -> int:
+    count = 0
+    for row in range(y):
+        for col in range(N):
+            if (bit_t[row * N + col] == 0) and (bit_s[row * N + col] == 1):
+                count += 1
+    return count
+
+def count_ones_down_num(y:int) -> int:
+    count = 0
+    for row in range(y + 1, N):
+        for col in range(N):
+            if (bit_t[row * N + col] == 0) and (bit_s[row * N + col] == 1):
+                count += 1
+    return count
+
+def update_right(y, r_goal_num:int, l_goal_num:int, bit_now:bitarray) -> tuple:
+    r_count = 0
+    now_count = 0
+    for row in range(N):
+        if (bit_t[row *N + (y+1)] == 1) and (bit_now[row * N + (y+1)] == 0):
+            r_count += 1
+        if (bit_t[row * N + y] == 1) and (bit_now[row * N + y] == 0):
+            now_count += 1
+    r_goal_num -= r_count
+    l_goal_num += now_count
+    return r_goal_num, l_goal_num
+
+def update_right_num(y, r_num:int, l_num:int, bit_now:bitarray) -> tuple:
+    r_count = 0
+    now_count = 0
+    for row in range(N):
+        if (bit_now[row * N + (y+1)] == 1) and (bit_t[row * N + (y+1)] == 0):
+            r_count += 1
+        if (bit_now[row * N + y] == 1) and (bit_t[row * N + y] == 0):
+            now_count += 1
+    # print(f"r_count:{r_count}")
+    # print(f"now_count:{now_count}")
+    r_num -= r_count
+    l_num += now_count
+    return r_num, l_num
+
+def update_down_num(x, d_num:int, u_num:int, bit_now:bitarray) -> tuple:
+    d_count = 0
+    now_count = 0
+    for col in range(N):
+        if (bit_now[(x+1) * N + col] == 1) and (bit_t[(x+1) * N + col] == 0):
+            d_count += 1
+        if (bit_now[x * N + col] == 1) and (bit_t[x * N + col] == 0):
+            now_count += 1
+    d_num -= d_count
+    u_num += now_count
+    return d_num, u_num
+
+def update_left_num(y, r_num:int, l_num:int, bit_now:bitarray) -> tuple:
+    l_count = 0
+    now_count = 0
+    for row in range(N):
+        if (bit_now[row *N + (y-1)] == 1) and (bit_t[row * N + (y-1)] == 0):
+            l_count += 1
+        if (bit_now[row * N + y] == 1) and (bit_t[row * N + y] == 0):
+            now_count += 1
+    l_num -= l_count
+    r_num += now_count
+    return r_num, l_num
+
+def update_up_num(x, d_num:int, u_num:int, bit_now:bitarray) -> tuple:
+    u_count = 0
+    now_count = 0
+    for col in range(N):
+        if (bit_now[(x-1) *N + col] == 1) and (bit_t[(x-1) *N + col] == 0):
+            u_count += 1
+        if (bit_now[x * N + col] == 1) and (bit_t[x * N + col] == 0):
+            now_count += 1
+    u_num -= u_count
+    d_num += now_count
+    return d_num, u_num
+
+def update_left(y, r_goal_num:int, l_goal_num:int, bit_now:bitarray) -> tuple:
+    l_count = 0
+    now_count = 0
+    # print(f"y:{y}")
+    for row in range(N):
+        if (bit_t[row *N + (y-1)] == 1) and (bit_now[row * N + (y-1)] == 0):
+            l_count += 1
+        if (bit_t[row * N + y] == 1) and (bit_now[row * N + y] == 0):
+            now_count += 1
+    # print(f"bit_t:{bit_t}")
+    # print(f"bit_now:{bit_now}")
+    # print(f"l_count:{l_count}")
+    l_goal_num -= l_count
+    r_goal_num += now_count
+    return r_goal_num, l_goal_num
+
+def update_down(x, d_goal_num:int, u_goal_num:int, bit_now:bitarray) -> tuple:
+    d_count = 0
+    now_count = 0
+    for col in range(N):
+        if (bit_t[(x+1) *N + col] == 1) and (bit_now[(x+1) *N + col] == 0):
+            d_count += 1
+        if (bit_t[x * N + col] == 1) and (bit_now[x * N + col] == 0):
+            now_count += 1
+    # print(f"x:{x}")
+    # print(f"d_count:{d_count}") 
+    # print("no")
+    d_goal_num -= d_count
+    u_goal_num += now_count
+    return d_goal_num, u_goal_num
+
+def update_up(x, d_goal_num:int, u_goal_num:int, bit_now:bitarray) -> tuple:
+    u_count = 0
+    now_count = 0
+    for col in range(N):
+        if (bit_t[(x-1) * N + col] == 1) and (bit_now[(x-1) * N + col] == 0):
+            u_count += 1
+        if (bit_t[x * N + col] == 1) and (bit_now[x * N + col] == 0):
+            now_count += 1
+    u_goal_num -= u_count
+    d_goal_num += now_count
+    return d_goal_num, u_goal_num
+
+def set_position(self, x, y):
+    if 0 <= x < self.m and 0 <= y < self.n:
+        self.current_x = x
+        self.current_y = y
+        self.update_counts()  # 位置を変更したらカウントを更新
+
+# 目的地の場所を把握する
+def init_goal_num(rx: int, ry: int) -> tuple:
+    r_goal_num = 0
+    d_goal_num = 0
+    l_goal_num = 0
+    u_goal_num = 0
+    r_goal_num = count_ones_right_goal(ry)
+    d_goal_num = count_ones_down_goal(rx)
+    l_goal_num = count_ones_left_goal(ry)
+    u_goal_num = count_ones_up_goal(rx)
+    return r_goal_num, d_goal_num, l_goal_num, u_goal_num
+
+def init_num(rx:int,ry:int) -> tuple:
+    r_num = 0
+    d_num = 0
+    l_num = 0
+    u_num = 0
+    r_num = count_ones_right_num(ry)
+    d_num = count_ones_down_num(rx)
+    l_num = count_ones_left_num(ry)
+    u_num = count_ones_up_num(rx)
+    return r_num, d_num, l_num, u_num
 
 # @measure_time
 def create_init_paths(rx: int, ry: int, bit_now: bitarray) -> list:
@@ -526,6 +803,19 @@ def create_init_paths(rx: int, ry: int, bit_now: bitarray) -> list:
     tree = init_tree()
     # decide the initial position
     rx, ry = 0, 0
+    
+    not_goal_num = num_diff_list(bit_now)
+    catch_num = 0
+    r_goal_num = 0
+    d_goal_num = 0
+    l_goal_num = 0
+    u_goal_num = 0
+    r_num = 0
+    d_num = 0
+    l_num = 0
+    u_num = 0
+    r_goal_num, d_goal_num, l_goal_num, u_goal_num = init_goal_num(rx, ry)
+    r_num, d_num, l_num, u_num = init_num(rx, ry)
 
     xs = [0 for _ in range(len(tree))]  # 全ての葉のx座標
     ys = [tree[i][1] for i in range(len(tree))]  # 全ての葉のy座標
@@ -540,14 +830,34 @@ def create_init_paths(rx: int, ry: int, bit_now: bitarray) -> list:
 
     paths = []
 
-    cnt = 0
-
     for turn in range(MAX_ITER):
+        # print(f"turn数:{turn}")
         path = []
-        # 乱択
-        dir = random.randint(0, 4)
+        # rootは多少賢く
+        # DX = [0, 1, 0, -1, 0]
+        # DY = [1, 0, -1, 0, 0]
+        # DIR = ["R", "D", "L", "U", "."]
+        # dir = random.randint(0, 4)
+        dir = choice_root_dir(rx, ry, bit_now, r_goal_num, d_goal_num, l_goal_num, u_goal_num, r_num, d_num, l_num, u_num, catch_num, not_goal_num)
+        # print(f"rx: {rx}, ry: {ry}")
+        # print(f"catch_num: {catch_num}, not_goal_num: {not_goal_num}")
+        # print(f"r_goal_num: {r_goal_num}, d_goal_num: {d_goal_num}, l_goal_num: {l_goal_num}, u_goal_num: {u_goal_num}")
+        # print(f"r_num: {r_num}, d_num: {d_num}, l_num: {l_num}, u_num: {u_num}")
+        # print(f"dir: {dir}")
         dx, dy = DX[dir], DY[dir]
         if 0 <= rx + dx < N and 0 <= ry + dy < N:
+            if dir == 0:
+                r_goal_num, l_goal_num = update_right(ry, r_goal_num, l_goal_num, bit_now)
+                r_num, l_num = update_right_num(ry, r_num, l_num, bit_now)
+            elif dir == 1:
+                d_goal_num, u_goal_num = update_down(rx, d_goal_num, u_goal_num, bit_now)
+                d_num, u_num = update_down_num(rx, d_num, u_num, bit_now)
+            elif dir == 2:
+                r_goal_num, l_goal_num = update_left(ry, r_goal_num, l_goal_num, bit_now)
+                r_num, l_num = update_left_num(ry, r_num, l_num, bit_now)
+            elif dir == 3:
+                d_goal_num, u_goal_num = update_up(rx, d_goal_num, u_goal_num, bit_now)
+                d_num, u_num = update_up_num(rx, d_num, u_num, bit_now)
             rx += dx
             ry += dy
             path.append(DIR[dir])
@@ -564,7 +874,7 @@ def create_init_paths(rx: int, ry: int, bit_now: bitarray) -> list:
             y = ys[i]
             rot = -1
             if holdings[i]:
-                rot = search_target_is_reachable(rx, ry, x, y)
+                rot = search_target_is_reachable(rx, ry, x, y, bit_now)
             else:
                 rot = search_source_is_reachable(rx, ry, x, y, bit_now)
             if rot == -1:
@@ -582,10 +892,14 @@ def create_init_paths(rx: int, ry: int, bit_now: bitarray) -> list:
             xs[i] = x
             ys[i] = y
 
-        # 乱択
+        # 乱択            
+        # if turn == 11:
+        #     print(f"rx, ry: {rx}, {ry}")
         for i in range(len(tree)):
             x = xs[i]
             y = ys[i]
+            # if turn == 11:
+            #     print(f"x, y: {x}, {y}")
             if 0 <= x and x < N and 0 <= y and y < N:
                 if (
                     (bit_now[x * N + y] == 1)
@@ -594,6 +908,15 @@ def create_init_paths(rx: int, ry: int, bit_now: bitarray) -> list:
                 ):
                     bit_now[x * N + y] = 0
                     holdings[i] = True
+                    catch_num += 1
+                    if rx < x:
+                        d_num -= 1
+                    if rx > x:
+                        u_num -= 1
+                    if ry < y:
+                        r_num -= 1
+                    if ry > y:
+                        l_num -= 1
                 elif (
                     (bit_now[x * N + y] == 0)
                     and (bit_t[x * N + y] == 1)
@@ -601,6 +924,19 @@ def create_init_paths(rx: int, ry: int, bit_now: bitarray) -> list:
                 ):
                     bit_now[x * N + y] = 1
                     holdings[i] = False
+                    not_goal_num -= 1
+                    catch_num -= 1
+                    if rx < x:
+                        d_goal_num -= 1
+                    if rx > x:
+                        # print(f"rx, ry: {rx}, {ry}")
+                        # print(f"x, y: {x}, {y}")
+                        # print("yes")
+                        u_goal_num -= 1
+                    if ry < y:
+                        r_goal_num -= 1
+                    if ry > y:
+                        l_goal_num -= 1
         # output the command
         paths.append(path)
         history_rx[turn] = rx
@@ -611,19 +947,13 @@ def create_init_paths(rx: int, ry: int, bit_now: bitarray) -> list:
         history_s[turn] |= bit_now
         if bit_now == bit_t:
             break
-        # print(xs)
-        # print(ys)
-        # print(paths)
-        # print(bit_now)
-        # cnt += 1
-        # if cnt == 4:
-        #     exit()
     len_history_s = turn
     return paths
 
 
 # @measure_time
 def make_output(bit_now: bitarray, paths: list) -> str:
+    global len_history_s
     rx = 0
     ry = 0
     # init_tree()は [0,1] [0,2] [0,3] ... [0,V-1] のようなスター型の木を返す
@@ -640,8 +970,6 @@ def make_output(bit_now: bitarray, paths: list) -> str:
     xs = [0 for _ in range(len(tree))]  # 全ての葉のx座標
     ys = [tree[i][1] for i in range(len(tree))]  # 全ての葉のy座標
     holdings = [False for _ in range(len(tree))]  # たこ焼きを持っているかどうか
-
-    # print(f"xs[2] ys[2]:{xs[2]} {ys[2]}")
 
     picks = []
 
@@ -688,8 +1016,9 @@ def make_output(bit_now: bitarray, paths: list) -> str:
 
         # 行動の通りにpickをする
         pick = []
-        pick.append(".")  # rootノードは何もしない
-        # print(f"xs[0] ys[0]:{xs[0]} {ys[0]}")
+        # pick.append(".")  # rootノードは何もしない
+        # rootも行動
+        pick.append(".")
         for i in range(len(tree)):
             x = xs[i]
             y = ys[i]
@@ -717,11 +1046,12 @@ def make_output(bit_now: bitarray, paths: list) -> str:
                 pick.append("P")
             else:
                 pick.append(".")
-            if bit_now == bit_t:
-                for i in range(len(pick), len(tree)+1):
-                    pick.append(".")
-                break
         picks.append(pick)
+        if (bit_now == bit_t):
+            len_history_s = i
+            for i in range(len(pick), len(tree)+1):
+                pick.append(".")
+            break
     for i in range(len(picks)):
         print(("".join(paths[i])) + ("".join(picks[i])))
 
@@ -736,4 +1066,5 @@ paths = paths_yakinamasi(paths=init_paths)
 # print("--yakinamasi--")
 # print(eval_func(history_s[len_history_s - 1], len_history_s))
 
-make_output(bit_now=bit_s.copy(), paths=init_paths.copy())
+make_output(bit_now=bit_s.copy(), paths=paths.copy())
+# make_output(bit_now=bit_s.copy(), paths=init_paths.copy())
