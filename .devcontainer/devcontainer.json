@@ -10,12 +10,9 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"amazonwebservices.aws-toolkit-vscode",
 				"nickdemayo.vscode-json-editor",
-				"usernamehw.errorlens",
 				"streetsidesoftware.code-spell-checker",
 				"mhutchie.git-graph",
-				"SonarSource.sonarlint-vscode",
 				"ms-python.python",
 				"ms-python.debugpy",
 				"LittleFoxTeam.vscode-python-test-adapter",
