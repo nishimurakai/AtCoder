@@ -127,7 +127,7 @@ def init_random_tree():
 
 # @measure_time
 def init_tree():
-    tree = [[0, i] for i in range(1, min(N, V))]
+    tree = [[0, i%(math.floor(math.sqrt(N)))+1] for i in range(V-1)]
     return tree
 
 
@@ -801,8 +801,6 @@ def create_init_paths(rx: int, ry: int, bit_now: bitarray) -> list:
         len_history_s
     # design the tree
     tree = init_tree()
-    # decide the initial position
-    rx, ry = 0, 0
     
     not_goal_num = num_diff_list(bit_now)
     catch_num = 0
