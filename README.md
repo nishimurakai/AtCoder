@@ -1,3 +1,3 @@
-# AtCoder Heuristic Contest 036
-## RECRUIT 日本橋ハーフマラソン 2024夏
-https://atcoder.jp/contests/ahc036
+# AtCoder Heuristic Contest 040
+## HACK TO THE FUTURE 2025 （AtCoder Heuristic Contest 040）
+https://atcoder.jp/contests/ahc040/
