@@ -1,31 +1,26 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
 {
-	"name": "DERMS_Planner_phase1",
-	// Configure tool-specific properties.
-	"image": "mcr.microsoft.com/devcontainers/python:3.12-bullseye",
-    "features": {
-        "ghcr.io/devcontainers-contrib/features/poetry:2": {},
-    },	
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"nickdemayo.vscode-json-editor",
-				"streetsidesoftware.code-spell-checker",
-				"mhutchie.git-graph",
-				"ms-python.python",
-				"ms-python.debugpy",
-				"LittleFoxTeam.vscode-python-test-adapter",
-				"GitHub.copilot",
-				"charliermarsh.ruff",
-				"gruntfuggly.todo-tree",
-				"ms-toolsai.jupyter",
-				"formulahendry.code-runner",
-				"shd101wyy.markdown-preview-enhanced",
-				"mechatroner.rainbow-csv",
-				"janisdd.vscode-edit-csv"
-			]
-		}
-	},
-	"postAttachCommand": ".devcontainer/post-attach.sh"
+    "name": "Python ML Development Container",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash",
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "python.pythonPath": "/usr/local/bin/python",
+        "python.formatting.provider": "black",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": true
+    },
+    "extensions": [
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+        "ms-azuretools.vscode-docker",
+        "esbenp.prettier-vscode",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "ms-vscode-remote.remote-ssh"
+    ],
+    "postCreateCommand": "pip install --upgrade pip && pip install -r requirements.txt",
+    "remoteUser": "vscode"
 }
