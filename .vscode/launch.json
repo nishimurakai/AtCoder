@@ -7,7 +7,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": [
-                "<", "${workspaceFolder}/AHC/043/data/input/0000.txt", ">", "${workspaceFolder}/AHC/043/data/output/0000.txt"
+                "<", "${fileDirname}/input.txt",
             ]
         }
     ]
