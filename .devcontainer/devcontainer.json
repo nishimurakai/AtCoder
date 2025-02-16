@@ -19,7 +19,8 @@
         "esbenp.prettier-vscode",
         "GitHub.copilot",
         "GitHub.copilot-chat",
-        "ms-vscode-remote.remote-ssh"
+        "ms-vscode-remote.remote-ssh",
+        "charliermarsh.ruff"
     ],
     "postCreateCommand": "pip install --upgrade pip && pip install -r requirements.txt",
     "remoteUser": "vscode"
